@@ -4,4 +4,5 @@ import Test.Hspec
 import DeckSpec (spec)
 
 main :: IO ()
-main = hspec $ DeckSpec.spec
+main = do
+    hspec $ DeckSpec.spec
