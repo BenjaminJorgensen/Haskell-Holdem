@@ -59,7 +59,9 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  MyLib
+    exposed-modules:  
+        HaskellHoldem,
+        Deck
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -68,7 +70,8 @@ library
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.20.0.0
+    build-depends:    
+        base ^>=4.20.0.0
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -92,7 +95,7 @@ executable Haskell-Holdem
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.20.0.0,
-        Haskell-Holdem
+        Haskell-Holdem,
 
     -- Directories containing source files.
     hs-source-dirs:   app
@@ -100,9 +103,9 @@ executable Haskell-Holdem
     -- Base language which the package is written in.
     default-language: Haskell2010
 
-test-suite Haskell-Holdem-test
+test-suite Testem
     -- Import common warning flags.
-    import:
+    import:     warnings
 
     -- Base language which the package is written in.
     default-language: Haskell2010
@@ -128,4 +131,5 @@ test-suite Haskell-Holdem-test
         base ^>=4.20.0.0,
         Haskell-Holdem,
         hspec,
-        QuickCheck
+        QuickCheck,
+        containers
