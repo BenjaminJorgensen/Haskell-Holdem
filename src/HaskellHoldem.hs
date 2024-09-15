@@ -1,4 +1,3 @@
-module HaskellHoldem (someFunc) where
+module HaskellHoldem where
+-- import Deck
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"

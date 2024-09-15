@@ -61,7 +61,7 @@ library
     -- Modules exported by the library.
     exposed-modules:  
         HaskellHoldem,
-        Deck
+        Deck,
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -71,7 +71,9 @@ library
 
     -- Other library packages from which modules are imported.
     build-depends:    
-        base ^>=4.20.0.0
+        base ^>=4.20.0.0,
+        random,
+        mtl
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -96,6 +98,8 @@ executable Haskell-Holdem
     build-depends:
         base ^>=4.20.0.0,
         Haskell-Holdem,
+        random,
+        mtl
 
     -- Directories containing source files.
     hs-source-dirs:   app
