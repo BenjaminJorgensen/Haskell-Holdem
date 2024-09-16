@@ -136,4 +136,6 @@ test-suite Testem
         Haskell-Holdem,
         hspec,
         QuickCheck,
-        containers
+        containers,
+        random,
+        mtl

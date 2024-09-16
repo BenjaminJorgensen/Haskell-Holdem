@@ -1,8 +1,11 @@
 module Main where
-import Deck (newDeck, threeCoins)
+import Deck (newDeck, shuffle)
 import System.Random
-import Control.Monad.State (runState)
+import System.Random.Stateful (runStateGen, newIOGenM)
 
 main :: IO ()
 main = do
-    print $ runState (threeCoins (1,1,1)) (mkStdGen 69)
+    gen <- (newIOGenM =<< getStdGen)
+    print newDeck
+    deck <- shuffle newDeck gen
+    print deck
