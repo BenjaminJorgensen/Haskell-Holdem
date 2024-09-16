@@ -2,7 +2,7 @@ module Deck where
 import qualified Data.Enum as DE
 import System.Random
 import Control.Monad.State
-import System.Random.Stateful (StatefulGen)
+import System.Random.Stateful (StatefulGen, randomM, UniformRange (uniformRM))
 
 data Suit = Diamonds | Hearts | Spades | Clubs deriving (Eq, Bounded, Enum, Read)
 data Value = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace deriving (Eq, Bounded, Ord, Enum, Read)
@@ -39,20 +39,23 @@ newDeck = [Card {suit=s, value=v} |
     s <- [DE.minBound .. DE.maxBound] :: [Suit], 
     v <- [DE.minBound .. DE.maxBound] :: [Value]]
 
+
+-- Original Fisher and Yates' method for shuffling even though faster
+-- algorithms exist (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
+--
 -- SHUFFLES THE GIVEN DECK
-shuffle :: Deck -> State StdGen (Deck)
-shuffle = undefined
+shuffle :: StatefulGen g m => Deck -> g -> m Deck
+shuffle deck gen = shuffle' deck [] gen
+    where
+        shuffle' :: StatefulGen g m => Deck -> Deck -> g -> m Deck
+        shuffle' [] modDeck _ = pure modDeck
+        shuffle' orig modDeck gen' = do
+            k <- uniformRM (0, length orig - 1) gen'
+            let (origL, origR) = splitAt k orig
+            case origR of 
+                [] -> pure modDeck
+                (x:origRtail) -> shuffle' (origL ++ origRtail) (x:modDeck) gen'
 
--- randomSt :: (RandomGen g, Random a) => State g a
--- randomSt = state random
-
--- threeCoins :: (Int,Int,Int) -> State StdGen (Int,Int,Int)
-threeCoins :: StatefulGen g m => (Int,Int,Int) -> g -> m (Int,Int,Int)
-threeCoins (x,y,z) = do
-    a <- random
-    b <- random
-    c <- random
-    return (a+x,b+y,c+z)
 
 -- DRAWS A CARD FROM THE DECK, REMOVING IT,
 -- FAILS IF DECK IS EMPTY
