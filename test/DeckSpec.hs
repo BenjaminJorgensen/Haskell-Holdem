@@ -1,6 +1,7 @@
 module DeckSpec (spec) where
 import System.Random
 import System.Random.Stateful (IOGenM)
+import Control.Monad.State
 
 import Test.Hspec
 import Deck
@@ -53,6 +54,6 @@ spec gen = do
                 (deck1 == deck2) `shouldBe` False
 
         describe "Drawing Cards" $ do
-            it "Deck shuffle changes card order" $ do
-                deck <- shuffle newDeck gen
-                (deck == newDeck) `shouldBe` False
+            it "Drawing cards eleminates it from the deck" $ do
+                card <- runState draw newDeck
+                (card `elem` newDeck) `shouldBe` False
