@@ -27,10 +27,10 @@ instance Show Value where
 
 -- Gets the colour of a card
 getColour :: Card -> Colour
-getColour (Card Diamonds _) = Red
-getColour (Card Hearts _) = Red
-getColour (Card Spades _) = Black
-getColour (Card Clubs _) = Black
+getColour card 
+        | suit card `elem` [Diamonds, Hearts] = Red
+        | suit card `elem` [Spades, Clubs] = Black
+        | otherwise = Other
 
 -- CREATES A NEW CARD DECK
 newDeck :: Deck
