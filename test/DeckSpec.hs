@@ -5,6 +5,7 @@ import Control.Monad.State
 
 import Test.Hspec
 import Deck
+import Control.Monad (replicateM)
 
 sumSuit :: Suit -> Deck -> Int
 sumSuit suitType = length . filter ((== suitType) . suit)
@@ -55,5 +56,22 @@ spec gen = do
 
         describe "Drawing Cards" $ do
             it "Drawing cards eleminates it from the deck" $ do
-                card <- runState draw newDeck
-                (card `elem` newDeck) `shouldBe` False
+                deck <- shuffle newDeck gen
+                let (card, pile) = runState draw deck
+                (elem card pile) `shouldBe` False
+                (elem card deck) `shouldBe` True
+            it "Drawing from an unshuffled deck" $ do
+                let card = evalState draw newDeck
+                suit card `shouldBe` Diamonds
+                value card `shouldBe` Two
+            it "Draw Three cards" $ do
+                let cards = evalState (replicateM 3 draw) newDeck
+                length cards `shouldBe` 3
+                all (\c -> suit c == Diamonds) cards `shouldBe` True
+                (value <$> cards) == [Two,Three,Four] `shouldBe` True
+            it "Draw Three cards - Shuffled" $ do
+                shuffled <- shuffle newDeck gen
+                let cards = evalState (replicateM 3 draw) shuffled
+                length cards `shouldBe` 3
+                all (\c -> suit c == Diamonds) cards `shouldBe` False
+                (value <$> cards) == [Two,Three,Four] `shouldBe` False
