@@ -39,6 +39,15 @@ newDeck = [Card {suit=s, value=v} |
     s <- [DE.minBound .. DE.maxBound] :: [Suit], 
     v <- [DE.minBound .. DE.maxBound] :: [Value]]
 
+-- TODO:
+-- Implement a O(n) algorithm for shuffling using
+
+-- To initialize an array a of n elements to a randomly shuffled copy of source, both 0-based:
+--   for i from 0 to n − 1 do
+--       j ← random integer such that 0 ≤ j ≤ i
+--       if j ≠ i
+--           a[i] ← a[j]
+--       a[j] ← source[i]
 
 -- Original Fisher and Yates' method for shuffling even though faster
 -- algorithms exist (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
