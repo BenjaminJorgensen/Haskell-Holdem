@@ -1,8 +1,7 @@
 module Deck where
 import qualified Data.Enum as DE
-import System.Random
 import Control.Monad.State
-import System.Random.Stateful (StatefulGen, randomM, UniformRange (uniformRM))
+import System.Random.Stateful (StatefulGen, UniformRange (uniformRM))
 
 data Suit = Diamonds | Hearts | Spades | Clubs deriving (Eq, Bounded, Enum, Read)
 data Value = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace deriving (Eq, Bounded, Ord, Enum, Read)
@@ -68,5 +67,7 @@ shuffle deck gen = shuffle' deck [] gen
 
 -- DRAWS A CARD FROM THE DECK, REMOVING IT,
 -- FAILS IF DECK IS EMPTY
-draw :: Deck -> Maybe Deck
-draw = undefined
+draw :: State Deck (Maybe Card)
+draw = state $ \deck -> case deck of
+    []      -> (Nothing, [])
+    (x:xs)  -> (Just x, xs)
