@@ -67,7 +67,8 @@ shuffle deck gen = shuffle' deck [] gen
 
 -- DRAWS A CARD FROM THE DECK, REMOVING IT,
 -- FAILS IF DECK IS EMPTY
-draw :: State Deck (Maybe Card)
+draw :: State Deck Card
 draw = state $ \deck -> case deck of
-    []      -> (Nothing, [])
-    (x:xs)  -> (Just x, xs)
+    []      -> error "Pulled from an empty deck"
+    (x:xs)  -> (x, xs)
+
