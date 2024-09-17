@@ -1,4 +1,4 @@
-module Rules (evalFlush) where
+module Rules (evalFlush, isFlush) where
 import Deck
 import Data.List
 -- Defining logic that applies to the game as a whole
