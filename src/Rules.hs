@@ -19,10 +19,10 @@ evalHand cards = undefined
 -- EVALULATE FLUSH
 -- A flush is a hand that contains five cards all of the same suit
 -- Give score if flush exists
-evalFlush :: [Card] -> Maybe Int
+evalFlush :: [Card] -> Maybe [Int]
 evalFlush cards = do
     validCards <- isFlush cards
-    pure $ foldl (\acc card -> acc * 2 + fromEnum (value card)) 0 $ sort validCards
+    pure $ reverse $ sort $ fromEnum . value <$> validCards
 
 isFlush :: [Card] -> Maybe [Card]
 isFlush cards = 
