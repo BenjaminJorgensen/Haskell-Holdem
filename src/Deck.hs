@@ -3,11 +3,17 @@ import qualified Data.Enum as DE
 import Control.Monad.State
 import System.Random.Stateful (StatefulGen, UniformRange (uniformRM))
 
-data Suit = Diamonds | Hearts | Spades | Clubs deriving (Eq, Bounded, Enum, Read)
+data Suit = Diamonds | Hearts | Spades | Clubs deriving (Eq, Ord, Bounded, Enum, Read)
 data Value = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace deriving (Eq, Bounded, Ord, Enum, Read)
 data Card = Card {suit :: Suit, value :: Value} deriving (Eq)
 data Colour = Black | Red | Other deriving (Show, Eq)
 type Deck = [Card]
+
+allSuits :: [Suit]
+allSuits = [DE.minBound .. DE.maxBound]
+
+instance Ord Card where
+    card `compare` other = value card `compare` value other
 
 instance Show Card where
     show card = show (suit card) ++ show (value card) 

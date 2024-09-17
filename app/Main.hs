@@ -1,7 +1,7 @@
 module Main where
 import System.Random
 import System.Random.Stateful (newIOGenM)
-import Deck (Deck, draw, shuffle, newDeck)
+import Deck
 import Control.Monad.State
 import Control.Monad (replicateM)
 
@@ -18,3 +18,4 @@ main = do
     let (pile, _) =  runState (replicateM 3 draw) deck'
     print pile
     print hands
+    print $ maximum [Card {suit=Spades, value=Two}, Card {suit=Diamonds, value=King}]
