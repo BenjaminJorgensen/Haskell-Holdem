@@ -73,6 +73,7 @@ shuffle deck gen = shuffle' deck [] gen
 
 -- DRAWS A CARD FROM THE DECK, REMOVING IT,
 -- FAILS IF DECK IS EMPTY
+-- TODO: Remove and handle error - Perhaps wrap in monad to warn empty deck
 draw :: State Deck Card
 draw = state $ \deck -> case deck of
     []      -> error "Pulled from an empty deck"

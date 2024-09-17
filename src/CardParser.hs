@@ -2,6 +2,10 @@ module CardParser where
 import Deck
 import Data.Char (digitToInt)
 
+-- WARNING: 
+-- This module will throw an error if parsing fails
+-- Use this only for testing and NEVER in gameplay
+
 genError :: [Char] -> a
 genError reason = error $ "Cannot parse card: " ++ reason
 
