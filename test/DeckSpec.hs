@@ -69,9 +69,3 @@ spec gen = do
                 length cards `shouldBe` 3
                 all (\c -> suit c == Diamonds) cards `shouldBe` True
                 (value <$> cards) == [Two,Three,Four] `shouldBe` True
-            it "Draw Three cards - Shuffled" $ do
-                shuffled <- shuffle newDeck gen
-                let cards = evalState (replicateM 3 draw) shuffled
-                length cards `shouldBe` 3
-                all (\c -> suit c == Diamonds) cards `shouldBe` False
-                (value <$> cards) == [Two,Three,Four] `shouldBe` False

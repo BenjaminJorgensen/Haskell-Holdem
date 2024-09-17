@@ -1,13 +1,16 @@
 module Main (main) where
 import Test.Hspec
 import System.Random
-import Control.Monad.State
-import System.Random.Stateful (runStateGen, newIOGenM)
+import System.Random.Stateful (newIOGenM)
 
-import DeckSpec (spec)
+import qualified DeckSpec as D
+import qualified RulesSpec as R
 
 main :: IO ()
 main = do
     gen <- getStdGen
     ioGen <- newIOGenM gen
-    hspec $ DeckSpec.spec ioGen
+    print "Testing Deck"
+    hspec $ D.spec ioGen
+    print "Testing Poker Rules"
+    hspec $ R.spec
