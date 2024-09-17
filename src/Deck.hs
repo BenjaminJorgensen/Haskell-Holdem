@@ -1,13 +1,16 @@
 module Deck where
 import qualified Data.Enum as DE
 import Control.Monad.State
-import System.Random.Stateful (StatefulGen, UniformRange (uniformRM))
+import System.Random.Stateful
+import Control.Monad.Reader
 
 data Suit = Diamonds | Hearts | Spades | Clubs deriving (Eq, Ord, Bounded, Enum, Read)
 data Value = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace deriving (Eq, Bounded, Ord, Enum, Read)
 data Card = Card {suit :: Suit, value :: Value} deriving (Eq)
 data Colour = Black | Red | Other deriving (Show, Eq)
+
 type Deck = [Card]
+
 
 allSuits :: [Suit]
 allSuits = [DE.minBound .. DE.maxBound]
@@ -57,25 +60,43 @@ newDeck = [Card {suit=s, value=v} |
 -- Original Fisher and Yates' method for shuffling even though faster
 -- algorithms exist (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
 --
--- SHUFFLES THE GIVEN DECK
-shuffle :: StatefulGen g m => Deck -> g -> m Deck
-shuffle deck gen = shuffle' deck [] gen
+
+-- Shuffle helper 
+shuffle :: StatefulGen g m => g -> Deck -> m Deck
+shuffle = hShuffle [] 
     where
-        shuffle' :: StatefulGen g m => Deck -> Deck -> g -> m Deck
-        shuffle' [] modDeck _ = pure modDeck
-        shuffle' orig modDeck gen' = do
-            k <- uniformRM (0, length orig - 1) gen'
+        hShuffle modDeck _ [] = pure modDeck
+        hShuffle modDeck gen orig = do
+            k <- uniformRM (0, length orig - 1) gen
             let (origL, origR) = splitAt k orig
             case origR of 
                 [] -> pure modDeck
-                (x:origRtail) -> shuffle' (origL ++ origRtail) (x:modDeck) gen'
+                (x:origRtail) -> hShuffle (x:modDeck) gen (origL ++ origRtail)
+
+draw :: Deck -> Maybe (Card, Deck)
+draw deck = case deck of
+        [] -> Nothing
+        (x:xs) -> Just (x, xs)
+
+-- Shuffles with mutation
+shuffleM :: (MonadReader g m, StatefulGen g m) => StateT Deck m Deck
+shuffleM = do
+    gen <- ask
+    deck <- get
+    shuffled <- lift $ shuffle gen deck
+    put shuffled >> pure shuffled
+
+drawM :: (MonadReader g m, StatefulGen g m) => StateT Deck m Card
+drawM = do
+    deck <- get
+    case deck of
+        [] -> shuffleM >> drawM
+        (x:xs) -> put xs >> pure x
 
 
--- DRAWS A CARD FROM THE DECK, REMOVING IT,
--- FAILS IF DECK IS EMPTY
--- TODO: Remove and handle error - Perhaps wrap in monad to warn empty deck
-draw :: State Deck Card
-draw = state $ \deck -> case deck of
-    []      -> error "Pulled from an empty deck"
-    (x:xs)  -> (x, xs)
+runCardState :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m (a, Deck)
+runCardState gen deckState actions = runReaderT (runStateT actions deckState) gen
+
+evalCardState :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m a
+evalCardState gen deckState actions = runReaderT (evalStateT actions deckState) gen
 

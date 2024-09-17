@@ -1,21 +1,23 @@
+{-# OPTIONS_GHC -Wno-unused-do-bind #-}
 module Main where
 import System.Random
 import System.Random.Stateful (newIOGenM)
 import Deck
-import Control.Monad.State
+import Rules
 import Control.Monad (replicateM)
-
--- TODO: TESTING FUNCTION THIS
-dealHeand :: State Deck Deck
-dealHeand = replicateM 2 draw
+import Data.Maybe (fromMaybe)
 
 -- Dealing Five hands of poker
 main :: IO ()
 main = do
     gen <- (newIOGenM =<< getStdGen)
-    deck <- shuffle newDeck gen
-    let (hands, deck') =  runState (replicateM 5 dealHeand) deck
-    let (pile, _) =  runState (replicateM 3 draw) deck'
-    print pile
-    print hands
-    print $ maximum [Card {suit=Spades, value=Two}, Card {suit=Diamonds, value=King}]
+    (players, community) <- evalCardState gen newDeck $ do
+        shuffleM
+        players <- replicateM 5 $ replicateM 2 drawM
+        community <- replicateM 5 drawM
+        pure (players, community)
+    print $ community
+    print $ players
+    putStrLn "Did player one get a flush?"
+    let flush = fromMaybe [0,0,0] (evalFlush $ (head players) ++ community)
+    print flush

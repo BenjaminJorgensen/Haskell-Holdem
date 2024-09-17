@@ -14,6 +14,6 @@ spec = do
                 let cardsWin = toCard <$>   ["3D", "4D", "5D", "6D", "7D", "8D", "9D"]
                 (evalFlush cardsWin)  `shouldSatisfy` (> (evalFlush cardsLose))
             it "Testing if Succeeds if flush exists 2" $ do
-                let cardsLose = toCard <$> ["3D", "4D", "5D", "6D", "7D", "8D", "9D"]
+                let cardsLose = toCard <$> ["4S", "4D", "5D", "6D", "7D", "8D", "9D"]
                 let cardsWin = toCard <$>  ["KD", "3D", "4D", "5D", "6D", "7D", "8D"]
                 (evalFlush cardsWin) `shouldSatisfy` (> (evalFlush cardsLose)) 
