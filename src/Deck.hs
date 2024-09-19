@@ -1,8 +1,15 @@
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Deck where
 import qualified Data.Enum as DE
 import Control.Monad.State
 import System.Random.Stateful
 import Control.Monad.Reader
+import Control.Monad.ST
+import Data.Array.ST
+import Control.Monad
+import Data.Array (Array)
+import Data.Array.Base
 
 data Suit = Diamonds | Hearts | Spades | Clubs deriving (Eq, Ord, Bounded, Enum, Read)
 data Value = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace deriving (Eq, Bounded, Ord, Enum, Read)
@@ -11,23 +18,26 @@ data Colour = Black | Red | Other deriving (Show, Eq)
 
 type Deck = [Card]
 
-
 allSuits :: [Suit]
 allSuits = [DE.minBound .. DE.maxBound]
 
 instance Ord Card where
+    compare :: Card -> Card -> Ordering
     card `compare` other = value card `compare` value other
 
 instance Show Card where
+    show :: Card -> String
     show card = show (suit card) ++ show (value card) 
 
 instance Show Suit where
+    show :: Suit -> String
     show Diamonds = "♦"
     show Hearts =   "♥"
     show Spades =   "♠"
     show Clubs =    "♣"
 
 instance Show Value where
+    show :: Value -> String
     show Ace =      "A"
     show King =     "K"
     show Queen =    "Q"
@@ -47,31 +57,21 @@ newDeck = [Card {suit=s, value=v} |
     s <- [DE.minBound .. DE.maxBound] :: [Suit], 
     v <- [DE.minBound .. DE.maxBound] :: [Value]]
 
--- TODO:
--- Implement a O(n) algorithm for shuffling using
+-- Shuffle Pure!
+shuffle :: (StatefulGen g m) => g -> Deck -> m Deck
+shuffle g deck = do
+    let n = length deck
+    rands <- forM [0..(n-2)] $ \i -> uniformRM (i, n-1) g
+    pure $ elems $ runSTArray $ do
+        arr <- newListArray (0, n - 1) deck :: ST s (STArray s Int Card)
+        forM_ (zip [0..] rands) $ \(i, j) -> do
+            vi <- readArray arr i
+            vj <- readArray arr j
+            writeArray arr j vi
+            writeArray arr i vj
+        return arr
 
--- To initialize an array a of n elements to a randomly shuffled copy of source, both 0-based:
---   for i from 0 to n − 1 do
---       j ← random integer such that 0 ≤ j ≤ i
---       if j ≠ i
---           a[i] ← a[j]
---       a[j] ← source[i]
 
--- Original Fisher and Yates' method for shuffling even though faster
--- algorithms exist (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
---
-
--- Shuffle helper 
-shuffle :: StatefulGen g m => g -> Deck -> m Deck
-shuffle = hShuffle [] 
-    where
-        hShuffle modDeck _ [] = pure modDeck
-        hShuffle modDeck gen orig = do
-            k <- uniformRM (0, length orig - 1) gen
-            let (origL, origR) = splitAt k orig
-            case origR of 
-                [] -> pure modDeck
-                (x:origRtail) -> hShuffle (x:modDeck) gen (origL ++ origRtail)
 
 draw :: Deck -> Maybe (Card, Deck)
 draw deck = case deck of

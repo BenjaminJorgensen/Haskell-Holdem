@@ -75,7 +75,9 @@ library
     build-depends:    
         base ^>=4.20.0.0,
         random,
-        mtl
+        mtl,
+        array,
+        primitive
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -101,7 +103,8 @@ executable Haskell-Holdem
         base ^>=4.20.0.0,
         Haskell-Holdem,
         random,
-        mtl
+        mtl,
+        array
 
     -- Directories containing source files.
     hs-source-dirs:   app

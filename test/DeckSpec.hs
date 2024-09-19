@@ -1,14 +1,11 @@
 module DeckSpec (spec) where
-import System.Random
-import System.Random.Stateful (IOGenM, runStateGen)
-import Control.Monad.State
+import System.Random ( StdGen )
+import System.Random.Stateful (IOGenM)
 
 import Test.Hspec
 import Deck
-import Control.Monad (replicateM)
 import Data.Maybe
 import CardParser (toCard) 
-import Control.Monad.Reader (ReaderT(runReaderT))
 
 sumSuit :: Suit -> Deck -> Int
 sumSuit suitType = length . filter ((== suitType) . suit)
