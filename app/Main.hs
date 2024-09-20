@@ -1,12 +1,8 @@
 {-# OPTIONS_GHC -Wno-unused-do-bind #-}
 module Main where
 
-import Control.Monad
-import Control.Monad.ST
-import Data.Array.ST
-import System.Random.Stateful
-import System.Random
-import Deck
+import System.Random.Stateful ( getStdGen, newIOGenM )
+import HaskellHoldem.Dealer.Deck ( newDeck, shuffle )
 
 -- Dealing Five hands of poker
 main :: IO ()

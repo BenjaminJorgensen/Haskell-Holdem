@@ -60,16 +60,17 @@ library
 
     -- Modules exported by the library.
     exposed-modules:  
-        HaskellHoldem,
-        Deck,
-        Rules,
-        CardParser
+        HaskellHoldem.Dealer.Deck,
+        HaskellHoldem.Dealer.Judgement,
+        Utils.CardParser
 
     -- Modules included in this library but not exported.
-    -- other-modules:
+    haddock-options: --output-directory="docs"
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
+    -- haddock-interfaces: dist/doc/haddock/<your-package-name>/<your-package-name>.haddock
+    -- haddock-options: --output-directory="docs"
 
     -- Other library packages from which modules are imported.
     build-depends:    
@@ -77,7 +78,6 @@ library
         random,
         mtl,
         array,
-        primitive
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -101,10 +101,12 @@ executable Haskell-Holdem
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.20.0.0,
-        Haskell-Holdem,
         random,
         mtl,
-        array
+        array,
+        Haskell-Holdem
+
+    haddock-options: --output-directory="docs"
 
     -- Directories containing source files.
     hs-source-dirs:   app

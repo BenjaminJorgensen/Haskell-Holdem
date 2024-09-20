@@ -1,8 +1,9 @@
-module CardParser where
-import Deck
-import Data.Char (digitToInt)
+module Utils.CardParser where
 
--- WARNING: 
+import Data.Char (digitToInt)
+import HaskellHoldem.Dealer.Deck (Card(..), Suit(..), Value(Ace, Jack, King, Queen, Ten))
+
+-- WARNING 
 -- This module will throw an error if parsing fails
 -- Use this only for testing and NEVER in gameplay
 
@@ -11,9 +12,9 @@ genError reason = error $ "Cannot parse card: " ++ reason
 
 toCard :: String -> Card
 toCard [] = genError "no card to parse"
-toCard (_:[]) = genError "incorrect number of values, no suit or no value"
-toCard (v:s:[]) = Card {value=toValue v, suit=toSuit s}
-toCard ('1':'0':s:[]) = Card {value=Ten, suit=toSuit s}
+toCard [_] = genError "incorrect number of values, no suit or no value"
+toCard [v, s] = Card {value = toValue v, suit = toSuit s}
+toCard ['1', '0', s] = Card {value = Ten, suit = toSuit s}
 toCard (_:_:e) = genError $ "incorrect number of values, to many values supplied: extra values are " ++ e
 
 toValue :: Char -> Value
