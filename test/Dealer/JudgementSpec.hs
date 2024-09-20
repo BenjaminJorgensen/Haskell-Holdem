@@ -1,7 +1,7 @@
-module RulesSpec (spec) where
-import Test.Hspec
-import Rules (evalFlush)
-import CardParser (toCard)
+module Dealer.JudgementSpec (spec) where
+import Test.Hspec ( describe, it, shouldBe, shouldSatisfy, Spec )
+import HaskellHoldem.Dealer.Judgement (evalFlush)
+import Util.CardParser ( toCard )
 
 spec :: Spec
 spec = do

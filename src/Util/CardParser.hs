@@ -1,4 +1,4 @@
-module Utils.CardParser where
+module Util.CardParser where
 
 import Data.Char (digitToInt)
 import HaskellHoldem.Dealer.Deck (Card(..), Suit(..), Value(Ace, Jack, King, Queen, Ten))

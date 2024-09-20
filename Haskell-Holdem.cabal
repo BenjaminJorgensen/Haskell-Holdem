@@ -62,10 +62,10 @@ library
     exposed-modules:  
         HaskellHoldem.Dealer.Deck,
         HaskellHoldem.Dealer.Judgement,
-        Utils.CardParser
+        Util.CardParser
 
     -- Modules included in this library but not exported.
-    haddock-options: --output-directory="docs"
+    -- haddock-options: --output-directory="docs"
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -106,7 +106,7 @@ executable Haskell-Holdem
         array,
         Haskell-Holdem
 
-    haddock-options: --output-directory="docs"
+    -- haddock-options: --output-directory="docs"
 
     -- Directories containing source files.
     hs-source-dirs:   app
@@ -123,9 +123,10 @@ test-suite Testem
 
     -- Modules included in this executable, other than Main.
     other-modules:
-        DeckSpec,
-        RulesSpec,
-        CardParserSpec
+        Dealer.DeckSpec,
+        Dealer.JudgementSpec,
+        Util.CardParserSpec,
+        Util.QuickCheckInstances
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
