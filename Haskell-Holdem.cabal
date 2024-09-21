@@ -61,6 +61,7 @@ library
     -- Modules exported by the library.
     exposed-modules:  
         HaskellHoldem.Dealer.Deck,
+        HaskellHoldem.Dealer.DeckActions,
         HaskellHoldem.Dealer.Judgement,
         Util.CardParser
 
@@ -124,6 +125,7 @@ test-suite Testem
     -- Modules included in this executable, other than Main.
     other-modules:
         Dealer.DeckSpec,
+        Dealer.DeckActionSpec,
         Dealer.JudgementSpec,
         Util.CardParserSpec,
         Util.QuickCheckInstances
