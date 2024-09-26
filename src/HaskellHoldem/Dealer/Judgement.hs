@@ -1,5 +1,6 @@
 module HaskellHoldem.Dealer.Judgement (evalFlush, isFlush) where
 import HaskellHoldem.Dealer.Deck
+import HaskellHoldem.Dealer.DeckActions
 import Data.List
 -- Defining logic that applies to the game as a whole
 

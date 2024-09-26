@@ -4,7 +4,7 @@ import System.Random.Stateful (newIOGenM)
 
 import qualified Util.CardParserSpec as CP
 import qualified Dealer.DeckSpec as D
-import qualified Dealer.DeckActionSpec as D
+import qualified Dealer.DeckActionSpec as DA
 import qualified Dealer.JudgementSpec as R
 
 main :: IO ()

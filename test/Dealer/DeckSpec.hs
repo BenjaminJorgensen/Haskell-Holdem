@@ -3,7 +3,7 @@ module Dealer.DeckSpec
     ) where
 
 import HaskellHoldem.Dealer.Deck
-import HaskellHoldem.Dealer.DeckActions (newDeck)
+import HaskellHoldem.Dealer.DeckActions (newDeck, allSuits, allFaceValues)
 import Test.Hspec (describe, hspec, it, shouldBe)
 import Test.QuickCheck (quickCheck)
 import Util.CardParser ()

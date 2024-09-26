@@ -7,7 +7,24 @@ import Control.Monad.State (MonadState(get, put), StateT(runStateT), evalStateT)
 import Data.Array.Base (elems, newListArray, readArray, writeArray)
 import Data.Array.ST (STArray, runSTArray)
 import System.Random.Stateful (StatefulGen, uniformRM)
-import HaskellHoldem.Dealer.Deck (Card(..), Deck, newDeck)
+import HaskellHoldem.Dealer.Deck (Card(..), Deck, Suit, Value)
+import qualified Data.Enum as DE
+
+allSuits :: [Suit]
+allSuits = [DE.minBound .. DE.maxBound]
+
+allFaceValues :: [Value]
+allFaceValues = [DE.minBound .. DE.maxBound]
+
+-- CREATES A NEW CARD DECK
+newDeck :: Deck
+newDeck =
+    [ Card {suit = s, value = v}
+    | s <- [DE.minBound .. DE.maxBound] :: [Suit]
+    , v <- [DE.minBound .. DE.maxBound] :: [Value]
+    ]
+
+
 
 -- Shuffle Pure!
 shuffle :: (StatefulGen g m) => g -> Deck -> m Deck
@@ -49,8 +66,8 @@ drawM = do
         [] -> shuffleM >> drawM
         (x:xs) -> put xs >> pure x
 
-runCardState :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m (a, Deck)
-runCardState gen deckState actions = runReaderT (runStateT actions deckState) gen
+runCardAction:: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m (a, Deck)
+runCardAction gen deckState actions = runReaderT (runStateT actions deckState) gen
 
-evalCardState :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m a
-evalCardState gen deckState actions = runReaderT (evalStateT actions deckState) gen
+evalCardAction :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m a
+evalCardAction gen deckState actions = runReaderT (evalStateT actions deckState) gen

@@ -38,21 +38,6 @@ data Colour
 
 type Deck = [Card]
 
-allSuits :: [Suit]
-allSuits = [DE.minBound .. DE.maxBound]
-
-allFaceValues :: [Value]
-allFaceValues = [DE.minBound .. DE.maxBound]
-
--- CREATES A NEW CARD DECK
-newDeck :: Deck
-newDeck =
-    [ Card {suit = s, value = v}
-    | s <- [DE.minBound .. DE.maxBound] :: [Suit]
-    , v <- [DE.minBound .. DE.maxBound] :: [Value]
-    ]
-
-
 instance Ord Card where
     card `compare` other = value card `compare` value other
 
