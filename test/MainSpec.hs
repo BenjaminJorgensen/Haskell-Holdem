@@ -10,10 +10,11 @@ import qualified Dealer.JudgementSpec as R
 main :: IO ()
 main = do
     gen <- getStdGen
-    ioGen <- newIOGenM gen
     putStrLn "Testing Card Parser"
     CP.spec 
     putStrLn "Testing Deck"
     D.spec
+    putStrLn "Testing Deck Actions"
+    DA.spec gen
     -- putStrLn "Testing Poker Rules"
     -- hspec $ R.spec

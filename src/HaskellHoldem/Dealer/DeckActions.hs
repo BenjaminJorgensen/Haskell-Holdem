@@ -6,9 +6,10 @@ import Control.Monad.ST (ST)
 import Control.Monad.State (MonadState(get, put), StateT(runStateT), evalStateT)
 import Data.Array.Base (elems, newListArray, readArray, writeArray)
 import Data.Array.ST (STArray, runSTArray)
-import System.Random.Stateful (StatefulGen, uniformRM)
+import System.Random.Stateful (StatefulGen, uniformRM, StateGenM (StateGenM), RandomGenM, runStateGen_, runStateGen)
 import HaskellHoldem.Dealer.Deck (Card(..), Deck, Suit, Value)
 import qualified Data.Enum as DE
+import System.Random (RandomGen)
 
 allSuits :: [Suit]
 allSuits = [DE.minBound .. DE.maxBound]
@@ -27,8 +28,8 @@ newDeck =
 
 
 -- Shuffle Pure!
-shuffle :: (StatefulGen g m) => g -> Deck -> m Deck
-shuffle g deck = do
+shuffle :: (StatefulGen g m) => Deck -> g -> m Deck
+shuffle deck g = do
     let n = length deck
     rands <- forM [0 .. (n - 2)] $ \i -> uniformRM (i, n - 1) g
     pure
@@ -56,7 +57,7 @@ shuffleM :: (MonadReader g m, StatefulGen g m) => StateT Deck m Deck
 shuffleM = do
     gen <- ask
     deck <- get
-    shuffled <- lift $ shuffle gen deck
+    shuffled <- lift $ shuffle deck gen
     put shuffled >> pure shuffled
 
 drawM :: (MonadReader g m, StatefulGen g m) => StateT Deck m Card
@@ -66,8 +67,11 @@ drawM = do
         [] -> shuffleM >> drawM
         (x:xs) -> put xs >> pure x
 
-runCardAction:: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m (a, Deck)
-runCardAction gen deckState actions = runReaderT (runStateT actions deckState) gen
+runShuffle :: RandomGen g => g -> Deck -> (Deck, g)
+runShuffle gen deck = runStateGen gen (shuffle deck)
 
-evalCardAction :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m a
-evalCardAction gen deckState actions = runReaderT (evalStateT actions deckState) gen
+cardAction_ :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m (a, Deck)
+cardAction_ gen deckState actions = runReaderT (runStateT actions deckState) gen
+
+cardAction :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m a
+cardAction gen deckState actions = runReaderT (evalStateT actions deckState) gen

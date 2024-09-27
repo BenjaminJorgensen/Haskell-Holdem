@@ -1,26 +1,77 @@
+{-# OPTIONS_GHC -Wno-unused-do-bind #-}
 module Dealer.DeckActionSpec where
+
+import HaskellHoldem.Dealer.DeckActions (newDeck, shuffle, runShuffle, cardAction, shuffleM)
+import Test.Hspec (describe, hspec, it, shouldBe, shouldNotBe)
+
 import HaskellHoldem.Dealer.Deck
-import HaskellHoldem.Dealer.DeckActions
-import Test.Hspec (describe, hspec, it, shouldBe)
-import Test.QuickCheck (quickCheck, Property)
+import System.Random.Stateful
+import Test.QuickCheck (quickCheck)
 import Util.CardParser ()
 import Util.QuickCheckInstances ()
-import System.Random.Stateful
-import Test.QuickCheck.Property ((===))
+import Util.DeckIntegrity (checkDeck)
+import HaskellHoldem.Dealer.DeckActions (cardAction_)
 
-prop_shuffleChangesDeckWithGen :: (StatefulGen g m) => g -> Deck -> m Property
-prop_shuffleChangesDeckWithGen gen deck = do
-    shuffledDeck <- shuffle gen deck
-    pure $ (deck /= shuffledDeck) === True
+-- WARNING : Be careful about creating mutation generators
 
+prop_shuffle :: (RandomGen g) => g -> Deck -> Bool
+prop_shuffle gen deck = deck /= (fst $ runShuffle gen deck)
 
-spec :: IOGenM StdGen ->  IO ()
+spec :: StdGen -> IO ()
 spec gen = do
+    putStrLn "Deck Action Tests"
     putStrLn "DeckAction QuickChecks"
-    shuffle_change <- prop_shuffleChangesDeckWithGen gen newDeck
-    quickCheck shuffle_change
+    quickCheck $ prop_shuffle gen newDeck
 
     hspec $ do
-        describe "Deck LongChecks" $ do
-            it "New deck has correct number of cards" $ do
-                length newDeck `shouldBe` 13
+        describe "Shuffle Pure" $ do
+
+            it "Pure Shuffling a Deck alters the deck" $ do
+                fst (runShuffle gen newDeck) `shouldNotBe` newDeck
+            it "Pure Shuffling with same seed" $ do
+                let (deck1, _) = runShuffle gen newDeck
+                let (deck2, _) = runShuffle gen newDeck
+                deck1 `shouldBe` deck2
+            it "Pure Shuffling with differnet seed" $ do
+                let (deck1, gen2) = runShuffle gen newDeck
+                let (deck2, _) = runShuffle gen2 newDeck
+                deck1 `shouldNotBe` deck2
+            it "Shuffling with mutation" $ do
+                iogen <- newIOGenM gen
+                deck1 <- shuffle newDeck iogen
+                deck2 <- shuffle newDeck iogen
+                deck1 `shouldNotBe` deck2
+            it "Shuffling chain with mutation" $ do
+                iogen <- newIOGenM gen
+                deck1 <- shuffle newDeck iogen
+                deck2 <- shuffle deck1 iogen
+                deck1 `shouldNotBe` deck2
+        checkDeck "Shuffle Deck Integrity" $ fst $ runShuffle gen newDeck
+
+        describe "Stateful Shuffling" $ do
+            it "Shuffle once in state" $ do
+                iogen <- newIOGenM gen
+                deck <- cardAction iogen newDeck $ do
+                    shuffleM
+                deck `shouldNotBe` newDeck
+            it "Shuffle multiple times" $ do
+                iogen <- newIOGenM gen
+                deck <- cardAction iogen newDeck $ do
+                    shuffleM
+                    shuffleM
+                    shuffleM
+                    shuffleM
+                deck `shouldNotBe` newDeck
+            it "Shuffle states are mutatable" $ do
+                iogen <- newIOGenM gen
+                deck1 <- cardAction iogen newDeck $ do
+                    shuffleM
+                deck2 <- cardAction iogen newDeck $ do
+                    shuffleM
+                deck1 `shouldNotBe` deck2
+            it "Shuffle gives entire deck as leftover" $ do
+                iogen <- newIOGenM gen
+                (deck1, deck2) <- cardAction_ iogen newDeck $ do
+                    shuffleM
+                    shuffleM
+                deck1 `shouldBe` deck2

@@ -128,7 +128,8 @@ test-suite Testem
         Dealer.DeckActionSpec,
         Dealer.JudgementSpec,
         Util.CardParserSpec,
-        Util.QuickCheckInstances
+        Util.QuickCheckInstances,
+        Util.DeckIntegrity
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
