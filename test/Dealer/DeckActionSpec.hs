@@ -1,16 +1,20 @@
 {-# OPTIONS_GHC -Wno-unused-do-bind #-}
 module Dealer.DeckActionSpec where
 
-import HaskellHoldem.Dealer.DeckActions (newDeck, shuffle, runShuffle, cardAction, shuffleM)
-import Test.Hspec (describe, hspec, it, shouldBe, shouldNotBe)
+import HaskellHoldem.Dealer.DeckActions (newDeck, shuffle, cardAction, shuffleM)
+import Test.Hspec (describe, hspec, it, shouldBe, shouldNotBe, shouldContain, shouldNotContain)
 
-import HaskellHoldem.Dealer.Deck
-import System.Random.Stateful
+import HaskellHoldem.Dealer.Deck ( Deck )
+import System.Random.Stateful ( newIOGenM, RandomGen, StdGen )
 import Test.QuickCheck (quickCheck)
 import Util.CardParser ()
 import Util.QuickCheckInstances ()
-import Util.DeckIntegrity (checkDeck)
+import Util.DeckIntegrity (checkDeck, deckSize, isSublist)
 import HaskellHoldem.Dealer.DeckActions (cardAction_)
+import HaskellHoldem.Dealer.DeckActions (draw)
+import HaskellHoldem.Dealer.DeckActions (runShuffle, runDraw, drawM)
+import Control.Monad
+import Control.Monad.State
 
 -- WARNING : Be careful about creating mutation generators
 
@@ -75,3 +79,48 @@ spec gen = do
                     shuffleM
                     shuffleM
                 deck1 `shouldBe` deck2
+
+        describe "Pure Drawing" $ do
+            it "Draw a card" $ do
+                let ((card, _), _) = runDraw gen newDeck
+                card `shouldBe` (head $ newDeck)
+            it "Drawing multiple cards" $ do
+                let ((card, deck), g) = runDraw gen newDeck
+                let ((card2, _), _) = runDraw g deck
+                card `shouldNotBe` card2
+            it "Drawing cards removes them from the deck" $ do
+                let ((card, deck), _) = runDraw gen newDeck
+                [card] `shouldNotContain` deck
+            it "Never run out of cards" $ do
+                iogen <- newIOGenM gen
+                largeDeck <- replicateM (deckSize*2) $ draw newDeck iogen
+                length largeDeck `shouldBe` deckSize * 2
+                isSublist largeDeck largeDeck `shouldBe` True
+
+        describe "Stateful drawing" $ do
+            it "Can draw statefully" $ do
+                iogen <- newIOGenM gen
+                (newhand, remainingDeck) <- cardAction_ iogen newDeck $ do
+                    card1 <- drawM
+                    card2 <- drawM
+                    card3 <- drawM
+                    pure [card1, card2, card3]
+                length newhand `shouldBe` 3
+                isSublist newhand newDeck `shouldBe` True
+                isSublist newhand remainingDeck `shouldBe` False
+            it "Generator Retains randomness" $ do
+                iogen <- newIOGenM gen
+                (newhand, remainingDeck) <- cardAction_ iogen (newDeck) $ do
+                    shuffleM
+                    card1 <- drawM
+                    card2 <- drawM
+                    card3 <- drawM
+                    pure [card1, card2, card3]
+                (newhand2, remainingDeck2) <- cardAction_ iogen newDeck $ do
+                    shuffleM
+                    card1 <- drawM
+                    card2 <- drawM
+                    card3 <- drawM
+                    pure [card1, card2, card3]
+                newhand `shouldNotBe` newhand2
+                remainingDeck `shouldNotBe` remainingDeck2

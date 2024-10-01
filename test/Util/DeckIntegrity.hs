@@ -13,6 +13,13 @@ sumSuit suitType = length . filter ((== suitType) . suit)
 sumValue :: Value -> Deck -> Int
 sumValue valueType = length . filter ((== valueType) . value)
 
+isSublist :: Eq a => [a] -> [a] -> Bool
+isSublist [] _ = True
+isSublist _ [] = False
+isSublist (x:xs) ys
+            | x `elem` ys = isSublist xs ys
+            | otherwise = False
+
 isDup :: Deck -> Bool
 isDup [] = False
 isDup [_] = False
