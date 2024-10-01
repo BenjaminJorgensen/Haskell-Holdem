@@ -1,7 +1,5 @@
 module HaskellHoldem.Dealer.Deck where
 
-import qualified Data.Enum as DE
-
 data Suit
     = Diamonds
     | Hearts

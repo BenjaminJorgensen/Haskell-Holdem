@@ -124,3 +124,10 @@ spec gen = do
                     pure [card1, card2, card3]
                 newhand `shouldNotBe` newhand2
                 remainingDeck `shouldNotBe` remainingDeck2
+            it "Stateful drawing never runs out of cards" $ do
+                iogen <- newIOGenM gen
+                cards <- cardAction iogen newDeck $ do
+                    cards <- replicateM (deckSize * 2) drawM
+                    pure cards
+                length cards `shouldBe` (deckSize * 2)
+
