@@ -3,18 +3,15 @@ module HaskellHoldem.Dealer.DeckActions where
 import Control.Monad (forM, forM_)
 import Control.Monad.Reader (MonadReader(ask), ReaderT(runReaderT))
 import Control.Monad.ST (ST)
+import Control.Monad.State.Lazy (MonadState(get, put), MonadTrans(lift), StateT(runStateT), evalStateT)
 import Control.Monad.State.Strict (State)
-import Data.Array.Base (elems, newListArray, readArray, writeArray)  
-import Data.Array.ST (STArray, runSTArray)
+import Data.Array.Base (elems, newListArray, readArray, writeArray)
+import Data.Array.ST (runSTUArray)
 import qualified Data.Enum as DE
-import HaskellHoldem.Dealer.Deck (Card(..), Deck, Suit, Value)
+import Data.Word (Word32)
+import HaskellHoldem.Dealer.Deck (Card(..), Deck, Suit, Value, makeCard)
 import System.Random (RandomGen)
-import System.Random.Stateful (StatefulGen, runStateGen, uniformRM, StateGenM, runStateGen_)
-import Control.Monad.State.Lazy
-    ( MonadTrans(lift),
-      evalStateT,
-      MonadState(put, get),
-      StateT(runStateT))
+import System.Random.Stateful (StateGenM, StatefulGen, runStateGen, runStateGen_, uniformRM)
 
 allSuits :: [Suit]
 allSuits = [DE.minBound .. DE.maxBound]
@@ -31,11 +28,7 @@ allFaceValues = [DE.minBound .. DE.maxBound]
 -- >>> take 5 newDeck
 -- [♦2,♦3,♦4,♦5,♦6]
 newDeck :: Deck
-newDeck =
-    [ Card {suit = s, value = v}
-    | s <- [DE.minBound .. DE.maxBound] :: [Suit]
-    , v <- [DE.minBound .. DE.maxBound] :: [Value]
-    ]
+newDeck = [makeCard v s | s <- [DE.minBound .. DE.maxBound] :: [Suit], v <- [DE.minBound .. DE.maxBound] :: [Value]]
 
 --  * Monadic Deck Actions
 --
@@ -55,12 +48,14 @@ newDeck =
 shuffle :: (StatefulGen g m) => Deck -> g -> m Deck
 shuffle deck g = do
     let n = length deck
+    let wordDeck = map (\(Card x) -> x) deck
     rands <- forM [0 .. (n - 2)] $ \i -> uniformRM (i, n - 1) g
     pure
+        $ map (\x -> Card x)
         $ elems
-        $ runSTArray
+        $ runSTUArray
         $ do
-              arr <- newListArray (0, n - 1) deck :: ST s (STArray s Int Card)
+              arr <- newListArray (0, n - 1) wordDeck :: ST s (STUArray s Int Word32)
               forM_ (zip [0 ..] rands) $ \(i, j) -> do
                   vi <- readArray arr i
                   vj <- readArray arr j
@@ -99,7 +94,7 @@ draw deck gen = do
 ---- >>> (card, take 5 $ deck)
 ---- StdGen {unStdGen = SMGen 16626775891238333538 2532601429470541125}
 ---- (♦2,[♦3,♦4,♦5,♦6,♦7])
-cardAction :: RandomGen g => (Deck -> StateGenM g  -> State g a) -> g -> Deck -> (a, g)
+cardAction :: RandomGen g => (Deck -> StateGenM g -> State g a) -> g -> Deck -> (a, g)
 cardAction function gen deck = runStateGen gen $ (function deck)
 
 ---- | A pure adapter for drawing a card from a deck or shuffling using a random generator.
@@ -111,13 +106,10 @@ cardAction function gen deck = runStateGen gen $ (function deck)
 ---- >>> let (card, deck) = cardAction_ draw (mkStdGen 100) newDeck
 ---- >>> (card, take 5 $ deck)
 ---- (♦2,[♦3,♦4,♦5,♦6,♦7])
-cardAction_ :: RandomGen g => (Deck -> StateGenM g  -> State g a) -> g -> Deck -> a
+cardAction_ :: RandomGen g => (Deck -> StateGenM g -> State g a) -> g -> Deck -> a
 cardAction_ function gen deck = runStateGen_ gen $ (function deck)
 
-
-
 -- * Mutateable Deck actions
-
 -- | Shuffles the deck in a mutable state (mutatable variant).
 --
 -- This function modifies the deck in place and can be used within a monad
@@ -144,7 +136,6 @@ shuffleM = do
 -- the state of the deck. If the deck is empty, it shuffles a new deck before drawing.
 -- Allows the draw to be run without worrying about return values, states or
 -- generators. Must run with 'cardAction' or similar functions.
-
 --
 -- ==== __Examples__
 --
@@ -195,4 +186,3 @@ cardActionM gen deckState actions = runReaderT (runStateT actions deckState) gen
 -- ♠A
 cardActionM_ :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m a
 cardActionM_ gen deckState actions = runReaderT (evalStateT actions deckState) gen
-

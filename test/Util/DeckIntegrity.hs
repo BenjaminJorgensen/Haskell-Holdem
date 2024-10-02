@@ -1,6 +1,6 @@
 module Util.DeckIntegrity where
 
-import HaskellHoldem.Dealer.Deck (Card(suit, value), Deck, Suit, Value)
+import HaskellHoldem.Dealer.Deck (Card, Deck, Suit, Value, getSuit, getValue)
 import HaskellHoldem.Dealer.DeckActions (allFaceValues, allSuits)
 import Test.Hspec
 
@@ -8,10 +8,10 @@ deckSize :: Int
 deckSize = length allSuits * length allFaceValues
 
 sumSuit :: Suit -> Deck -> Int
-sumSuit suitType = length . filter ((== suitType) . suit)
+sumSuit suitType = length . filter ((== suitType) . getSuit)
 
 sumValue :: Value -> Deck -> Int
-sumValue valueType = length . filter ((== valueType) . value)
+sumValue valueType = length . filter ((== valueType) . getValue)
 
 isSublist :: Eq a => [a] -> [a] -> Bool
 isSublist [] _ = True
