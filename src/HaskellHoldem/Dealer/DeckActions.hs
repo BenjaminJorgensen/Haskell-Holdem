@@ -1,15 +1,20 @@
 module HaskellHoldem.Dealer.DeckActions where
 
 import Control.Monad (forM, forM_)
-import Control.Monad.Reader (MonadReader(ask), MonadTrans(lift), ReaderT(runReaderT))
+import Control.Monad.Reader (MonadReader(ask), ReaderT(runReaderT))
 import Control.Monad.ST (ST)
-import Control.Monad.State (MonadState(get, put), StateT(runStateT), evalStateT)
-import Data.Array.Base (elems, newListArray, readArray, writeArray)
+import Control.Monad.State.Strict (State)
+import Data.Array.Base (elems, newListArray, readArray, writeArray)  
 import Data.Array.ST (STArray, runSTArray)
 import qualified Data.Enum as DE
 import HaskellHoldem.Dealer.Deck (Card(..), Deck, Suit, Value)
 import System.Random (RandomGen)
-import System.Random.Stateful (StatefulGen, runStateGen, uniformRM)
+import System.Random.Stateful (StatefulGen, runStateGen, uniformRM, StateGenM, runStateGen_)
+import Control.Monad.State.Lazy
+    ( MonadTrans(lift),
+      evalStateT,
+      MonadState(put, get),
+      StateT(runStateT))
 
 allSuits :: [Suit]
 allSuits = [DE.minBound .. DE.maxBound]
@@ -38,7 +43,7 @@ newDeck =
 --
 -- This function returns a new shuffled deck.
 -- It requires a stateful random number generator.
--- It may be benificial to use the 'runShuffle' adapter if attepting to use in
+-- It may be beneficial to use the 'runShuffle' adapter if attempting to use in
 -- a pure context
 --
 -- ==== __Examples__
@@ -83,35 +88,33 @@ draw deck gen = do
         [] -> draw newDeck gen
         (x:xs) -> pure (x, xs)
 
---  * Pure adapter for Deck Actions
+---- | A pure adapter for drawing a card from a deck or shuffling using a random generator.
+----
+---- It returns the result of the card action and the updated generator.
+----
+---- ==== __Examples__
+----
+---- >>> let ((card, deck), newGen) = cardAction draw (mkStdGen 100) newDeck
+---- >>> newGen
+---- >>> (card, take 5 $ deck)
+---- StdGen {unStdGen = SMGen 16626775891238333538 2532601429470541125}
+---- (♦2,[♦3,♦4,♦5,♦6,♦7])
+cardAction :: RandomGen g => (Deck -> StateGenM g  -> State g a) -> g -> Deck -> (a, g)
+cardAction function gen deck = runStateGen gen $ (function deck)
 
--- | A pure adapter that shuffles a deck of cards using a random generator.
---
--- It returns the shuffled deck and the updated generator.
---
--- ==== __Examples__
---
--- >>> let (shuffledDeck, newGen) = runShuffle (mkStdGen 100) newDeck
--- >>> newGen
--- >>> take 5 $ shuffledDeck
--- StdGen {unStdGen = SMGen 7627367855025918744 2532601429470541125}
--- [♠A,♦J,♠2,♠7,♣8]
-runShuffle :: (RandomGen g) => g -> Deck -> (Deck, g)
-runShuffle gen deck = runStateGen gen (shuffle deck)
+---- | A pure adapter for drawing a card from a deck or shuffling using a random generator.
+----
+---- It returns the result of the card action and discards updated generator.
+----
+---- ==== __Examples__
+----
+---- >>> let (card, deck) = cardAction_ draw (mkStdGen 100) newDeck
+---- >>> (card, take 5 $ deck)
+---- (♦2,[♦3,♦4,♦5,♦6,♦7])
+cardAction_ :: RandomGen g => (Deck -> StateGenM g  -> State g a) -> g -> Deck -> a
+cardAction_ function gen deck = runStateGen_ gen $ (function deck)
 
--- | A pure adapter for drawing a card from a deck using a random generator.
---
--- It returns a tuple containing the drawn card, the updated deck, and the updated generator.
---
--- ==== __Examples__
---
--- >>> let ((card, deck), newGen) = runDraw (mkStdGen 100) newDeck
--- >>> newGen
--- >>> (card, take 5 $ deck)
--- StdGen {unStdGen = SMGen 16626775891238333538 2532601429470541125}
--- (♦2,[♦3,♦4,♦5,♦6,♦7])
-runDraw :: (RandomGen g) => g -> Deck -> ((Card, Deck), g)
-runDraw gen deck = runStateGen gen (draw deck)
+
 
 -- * Mutateable Deck actions
 
@@ -175,8 +178,8 @@ drawM = do
 -- >>> take 5 $ deck
 -- ♠A
 -- [♦J,♠2,♠7,♣8,♠2]
-cardAction_ :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m (a, Deck)
-cardAction_ gen deckState actions = runReaderT (runStateT actions deckState) gen
+cardActionM :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m (a, Deck)
+cardActionM gen deckState actions = runReaderT (runStateT actions deckState) gen
 
 -- | Runs a card action on a deck and returns only the result of the action.
 --
@@ -190,5 +193,6 @@ cardAction_ gen deckState actions = runReaderT (runStateT actions deckState) gen
 -- >>>     pure card
 -- >>> result
 -- ♠A
-cardAction :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m a
-cardAction gen deckState actions = runReaderT (evalStateT actions deckState) gen
+cardActionM_ :: (StatefulGen g m) => g -> Deck -> StateT Deck (ReaderT g m) a -> m a
+cardActionM_ gen deckState actions = runReaderT (evalStateT actions deckState) gen
+
