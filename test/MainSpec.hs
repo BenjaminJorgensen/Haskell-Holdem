@@ -16,5 +16,6 @@ main = do
     D.spec
     putStrLn "Testing Deck Actions"
     DA.spec gen
-    -- putStrLn "Testing Poker Rules"
-    -- hspec $ R.spec
+    putStrLn "Testing Flushes"
+    R.spec
+    putStrLn "Done"

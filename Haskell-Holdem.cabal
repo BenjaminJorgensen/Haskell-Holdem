@@ -63,6 +63,8 @@ library
         HaskellHoldem.Dealer.Deck,
         HaskellHoldem.Dealer.DeckActions,
         HaskellHoldem.Dealer.Judgement,
+        HaskellHoldem.Dealer.Hand,
+        Util.FlushTable,
         Util.CardParser
 
     -- Modules included in this library but not exported.
@@ -129,7 +131,7 @@ test-suite Testem
         Dealer.JudgementSpec,
         Util.CardParserSpec,
         Util.QuickCheckInstances,
-        Util.DeckIntegrity
+        Util.DeckIntegrity,
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

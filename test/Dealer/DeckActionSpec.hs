@@ -8,8 +8,8 @@ import System.Random.Stateful (RandomGen, StdGen, newIOGenM)
 import Test.Hspec (describe, hspec, it, shouldBe, shouldNotBe, shouldNotContain)
 import Test.QuickCheck (quickCheck)
 
-import HaskellHoldem.Dealer.Deck (Deck)
-import HaskellHoldem.Dealer.DeckActions (cardAction, cardActionM, cardActionM_, draw, drawM, newDeck, shuffle, shuffleM)
+import HaskellHoldem.Dealer.Deck (Deck, newDeck)
+import HaskellHoldem.Dealer.DeckActions (cardAction, cardActionM, cardActionM_, draw, drawM, shuffle, shuffleM)
 
 import Util.CardParser ()
 import Util.DeckIntegrity (checkDeck, deckSize, isSublist)

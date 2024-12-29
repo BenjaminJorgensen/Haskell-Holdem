@@ -6,18 +6,12 @@ import Control.Monad.ST (ST)
 import Control.Monad.State.Lazy (MonadState(get, put), MonadTrans(lift), StateT(runStateT), evalStateT)
 import Control.Monad.State.Strict (State)
 import Data.Array.Base (elems, newListArray, readArray, writeArray)
-import Data.Array.ST (runSTUArray)
-import qualified Data.Enum as DE
+import Data.Array.ST (runSTUArray, STUArray)
 import Data.Word (Word32)
-import HaskellHoldem.Dealer.Deck (Card(..), Deck, Suit, Value, makeCard)
+import HaskellHoldem.Dealer.Deck (Card(..), Deck, newDeck)
 import System.Random (RandomGen)
 import System.Random.Stateful (StateGenM, StatefulGen, runStateGen, runStateGen_, uniformRM)
 
-allSuits :: [Suit]
-allSuits = [DE.minBound .. DE.maxBound]
-
-allFaceValues :: [Value]
-allFaceValues = [DE.minBound .. DE.maxBound]
 
 -- | Creates a new, unshuffled deck of cards.
 --
@@ -27,8 +21,6 @@ allFaceValues = [DE.minBound .. DE.maxBound]
 --
 -- >>> take 5 newDeck
 -- [♦2,♦3,♦4,♦5,♦6]
-newDeck :: Deck
-newDeck = [makeCard v s | s <- [DE.minBound .. DE.maxBound] :: [Suit], v <- [DE.minBound .. DE.maxBound] :: [Value]]
 
 --  * Monadic Deck Actions
 --
@@ -39,7 +31,7 @@ newDeck = [makeCard v s | s <- [DE.minBound .. DE.maxBound] :: [Suit], v <- [DE.
 -- It may be beneficial to use the 'runShuffle' adapter if attempting to use in
 -- a pure context
 --
--- ==== __Examples__
+-- ==== __Example_
 --
 -- >>> gen <- newIOGenM (mkStdGen 100)
 -- >>> shuffledDeck <- shuffle newDeck gen
@@ -110,7 +102,7 @@ cardAction_ :: RandomGen g => (Deck -> StateGenM g -> State g a) -> g -> Deck ->
 cardAction_ function gen deck = runStateGen_ gen $ (function deck)
 
 -- * Mutateable Deck actions
--- | Shuffles the deck in a mutable state (mutatable variant).
+-- | Shuffles the deck in a mutable state (mutable variant).
 --
 -- This function modifies the deck in place and can be used within a monad
 -- that supports mutable state. Allows the shuffle to be run without worrying
