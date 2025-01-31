@@ -12,6 +12,7 @@ data Hand = Hand
     }
 
 -- PERF: Find faster way to constructHand's
+-- Potentionally extend hand to have record for each suit and then popcount bits
 constructHand :: [Card] -> Hand
 constructHand cards = Hand {quint = calculateQuint, suitBits = makeSuitBits cards}
   where

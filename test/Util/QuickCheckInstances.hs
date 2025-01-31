@@ -1,5 +1,4 @@
 {-# LANGUAGE InstanceSigs #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
 module Util.QuickCheckInstances where
 import Test.QuickCheck
 import HaskellHoldem.Dealer.Deck (Card, makeCard, allValues, allSuits)

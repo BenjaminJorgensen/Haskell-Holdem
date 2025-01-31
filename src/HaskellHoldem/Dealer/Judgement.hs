@@ -1,9 +1,8 @@
 module HaskellHoldem.Dealer.Judgement where
 import HaskellHoldem.Dealer.Deck
 import Util.FlushTable
-import Data.List (group, groupBy)
-import Data.Maybe (fromMaybe)
 import HaskellHoldem.Dealer.Hand (Hand (..), constructHand)
+import Data.Word (Word32)
 
 -- +--------+--------+--------+--------+
 -- |xxxbbbbb|bbbbbbbb|cdhsrrrr|xxpppppp|
@@ -25,4 +24,5 @@ getFlushKey (Hand _ bitss) = case filter (\x -> fst x >= 5) bitss of
     [x] -> (fromIntegral . snd) x
     _ -> -1
 
-
+fastHash :: Word32 -> Int
+fastHash = undefined

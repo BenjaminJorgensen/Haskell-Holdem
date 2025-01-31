@@ -1,6 +1,12 @@
 module Util.QuickCheckInstances where
 
 value_codes :: [String]
+newtype Card = Card Word32 deriving (Eq, Ord)
+type Deck = [Card]
+
+type Suit = Word32
+type Value = Word32
+
 value_codes = fmap show ([2 .. 10] :: [Int]) ++ ["A", "K", "Q", "J"]
 
 suit_codes :: [String]
